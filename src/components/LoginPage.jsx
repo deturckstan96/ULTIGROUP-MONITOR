@@ -12,6 +12,7 @@ export default function LoginPage({ fout = null }) {
     setLoading(true); setErr(null)
     const { error } = await supabase.auth.signInWithPassword({ email, password: pass })
     if (error) { setErr('Fout e-mail of wachtwoord'); setLoading(false) }
+    else { setLoading(false) }
   }
 
   return (

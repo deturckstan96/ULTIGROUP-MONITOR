@@ -22,6 +22,7 @@ const TABS = [
 export default function App() {
   const [session, setSession]       = useState(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const [accessFout, setAccessFout] = useState(null)
   const [tab, setTab]               = useState('dashboard')
   const [refreshKey, setRefreshKey] = useState(0)
   const [notifOpen, setNotifOpen]   = useState(false)
@@ -29,7 +30,17 @@ export default function App() {
   const { permission, subscribed, loading, subscribe, isStandalone, supported } = usePushNotifications()
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, s) => {
+      if (_e === 'SIGNED_IN' && s) {
+        const role = s.user?.user_metadata?.role
+        if (role !== 'monitor') {
+          setAccessFout('Dit account heeft geen toegang tot de Monitor app.')
+          supabase.auth.signOut()
+          setAuthLoading(false)
+          return
+        }
+        setAccessFout(null)
+      }
       setSession(s)
       setAuthLoading(false)
     })
@@ -37,12 +48,7 @@ export default function App() {
   }, [])
 
   if (authLoading) return <div style={{ position: 'fixed', inset: 0, background: '#0f2748' }} />
-  if (!session)    return <LoginPage />
-  const role = session.user?.user_metadata?.role
-  if (role !== 'monitor') {
-    supabase.auth.signOut()
-    return <LoginPage fout="Dit account heeft geen toegang tot de Monitor app." />
-  }
+  if (!session)    return <LoginPage fout={accessFout} />
 
   const showInstallHint = !isStandalone
   const showPushBanner  = isStandalone && supported && permission !== 'granted' && !subscribed
