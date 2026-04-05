@@ -19,29 +19,17 @@ const TABS = [
   { id: 'sjaka',      icon: '💶', label: 'Sjaka'      },
 ]
 
-export default function App({ initialSession = null }) {
-  const [session, setSession]       = useState(initialSession)
-  const [authLoading, setAuthLoading] = useState(false)
-  const [accessFout, setAccessFout] = useState(null)
-  const [tab, setTab]               = useState('dashboard')
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [notifOpen, setNotifOpen]   = useState(false)
+export default function App() {
+  const [session,     setSession]     = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+  const [tab,         setTab]         = useState('dashboard')
+  const [refreshKey,  setRefreshKey]  = useState(0)
+  const [notifOpen,   setNotifOpen]   = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
   const { permission, subscribed, loading, subscribe, isStandalone, supported } = usePushNotifications()
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (_e === 'SIGNED_IN' && s) {
-        const email = s.user?.email
-        if (email !== 'stan@ultigroup.be') {
-          setAccessFout('Dit account heeft geen toegang tot de Monitor app.')
-          setSession(null)
-          setAuthLoading(false)
-          supabase.auth.signOut()
-          return
-        }
-        setAccessFout(null)
-      }
       setSession(s)
       setAuthLoading(false)
     })
@@ -49,7 +37,13 @@ export default function App({ initialSession = null }) {
   }, [])
 
   if (authLoading) return <div style={{ position: 'fixed', inset: 0, background: '#0f2748' }} />
-  if (!session)    return <LoginPage fout={accessFout} />
+  if (!session)    return <LoginPage />
+
+  // Enkel stan@ultigroup.be heeft toegang
+  if (session.user?.email !== 'stan@ultigroup.be') {
+    supabase.auth.signOut()
+    return <LoginPage fout="Dit account heeft geen toegang tot de Monitor app." />
+  }
 
   const showInstallHint = !isStandalone
   const showPushBanner  = isStandalone && supported && permission !== 'granted' && !subscribed
