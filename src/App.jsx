@@ -32,8 +32,8 @@ export default function App({ initialSession = null }) {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       if (_e === 'SIGNED_IN' && s) {
-        const role = s.user?.user_metadata?.role
-        if (role !== 'monitor') {
+        const email = s.user?.email
+        if (email !== 'stan@ultigroup.be') {
           setAccessFout('Dit account heeft geen toegang tot de Monitor app.')
           setSession(null)
           setAuthLoading(false)
