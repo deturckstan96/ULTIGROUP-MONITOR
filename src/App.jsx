@@ -19,9 +19,9 @@ const TABS = [
   { id: 'sjaka',      icon: '💶', label: 'Sjaka'      },
 ]
 
-export default function App() {
-  const [session, setSession]       = useState(null)
-  const [authLoading, setAuthLoading] = useState(true)
+export default function App({ initialSession = null }) {
+  const [session, setSession]       = useState(initialSession)
+  const [authLoading, setAuthLoading] = useState(false)
   const [accessFout, setAccessFout] = useState(null)
   const [tab, setTab]               = useState('dashboard')
   const [refreshKey, setRefreshKey] = useState(0)
@@ -30,13 +30,14 @@ export default function App() {
   const { permission, subscribed, loading, subscribe, isStandalone, supported } = usePushNotifications()
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
       if (_e === 'SIGNED_IN' && s) {
         const role = s.user?.user_metadata?.role
         if (role !== 'monitor') {
           setAccessFout('Dit account heeft geen toegang tot de Monitor app.')
-          supabase.auth.signOut()
+          setSession(null)
           setAuthLoading(false)
+          supabase.auth.signOut()
           return
         }
         setAccessFout(null)
