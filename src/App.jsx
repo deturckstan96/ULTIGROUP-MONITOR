@@ -36,14 +36,13 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
-  if (authLoading) return <div style={{ position: 'fixed', inset: 0, background: '#0f2748' }} />
-  if (!session)    return <LoginPage />
-
-  // Enkel stan@ultigroup.be heeft toegang
-  if (session.user?.email !== 'stan@ultigroup.be') {
-    supabase.auth.signOut()
-    return <LoginPage fout="Dit account heeft geen toegang tot de Monitor app." />
-  }
+  // AUTH TIJDELIJK UITGESCHAKELD — uncommentarieer de 3 blokken hieronder om terug aan te zetten
+  // if (authLoading) return <div style={{ position: 'fixed', inset: 0, background: '#0f2748' }} />
+  // if (!session)    return <LoginPage />
+  // if (session.user?.email !== 'stan@ultigroup.be') {
+  //   supabase.auth.signOut()
+  //   return <LoginPage fout="Dit account heeft geen toegang tot de Monitor app." />
+  // }
 
   const showInstallHint = !isStandalone
   const showPushBanner  = isStandalone && supported && permission !== 'granted' && !subscribed
