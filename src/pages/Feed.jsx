@@ -78,7 +78,7 @@ export default function Feed() {
           .order('created_at', { ascending: false })
           .limit(30),
         supabase.from('werkorder_boekingen')
-          .select('id, werkorder_nr, qty, geboekt_at, werkorders(naam, uga)')
+          .select('id, werkorder_nr, qty, geboekt_at, werkorder_regels(naam, pallet_nr)')
           .gte('geboekt_at', sinceIso)
           .order('geboekt_at', { ascending: false })
           .limit(30),
@@ -102,7 +102,7 @@ export default function Feed() {
         feed.push({ type: 'pallet', titel: `${r.pallet_naam || r.pallet_nr} — ${r.qty} stuks`, sub: `Lot #${r.id}`, tijd: r.created_at })
 
       for (const r of werkorders.data || [])
-        feed.push({ type: 'werkorder', titel: `${r.werkorders?.naam || r.werkorders?.uga || r.werkorder_nr} — ${r.qty} stuks`, sub: r.werkorder_nr, tijd: r.geboekt_at })
+        feed.push({ type: 'werkorder', titel: `${r.werkorder_regels?.naam || r.werkorder_regels?.pallet_nr || r.werkorder_nr} — ${r.qty} stuks`, sub: r.werkorder_nr, tijd: r.geboekt_at })
 
       feed.sort((a, b) => new Date(b.tijd) - new Date(a.tijd))
       setItems(feed)
